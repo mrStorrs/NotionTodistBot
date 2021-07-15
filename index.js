@@ -25,15 +25,20 @@ setInterval(function () {
  * Monitors Notion for changes in pages.
  */
 async function findNotionChanges() {
-    const response = await notion.databases.query({
-        database_id: databaseId,
-        filter: {
-            "property": "Status",
-            "select": {
-                "equals" : "Today"
+    try{
+        const response = await notion.databases.query({
+            database_id: databaseId,
+            filter: {
+                "property": "Status",
+                "select": {
+                    "equals" : "Today"
+                }
             }
-        }
-    });
+        });
+    }catch (error){
+        console.log(error)
+        return null; //stop function, error found while attempting to access notion API
+    }
     //what to do if changes are found.
     if(JSON.stringify(response) != JSON.stringify(last_notion)){
         console.log("Notion pages do not match, updating pages")
