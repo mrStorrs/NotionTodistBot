@@ -35,27 +35,28 @@ async function findNotionChanges() {
                 }
             }
         });
+
+        //what to do if changes are found.
+        if(JSON.stringify(response) != JSON.stringify(last_notion)){
+            console.log("Notion pages do not match, updating pages")
+            notion_task_dict = {}; //reset dict 
+            last_notion = response;
+    
+            //find plain text titles of each task, then add to a dictionary to be checked against tasks.
+            for(var x = 0; x < response.results.length; x++){
+                var title = response.results[x].properties.Name.title[0].plain_text
+                var notion_page_id = response.results[x].id
+                notion_task_dict[title] = [0, notion_page_id];      
+            };
+            console.log(notion_task_dict);
+            notion_synced = true;
+        //What to do if no changes are found
+        } else {
+            console.log("No notion changes found")
+        }
+
     }catch (error){
         console.log(error)
-        return null; //stop function, error found while attempting to access notion API
-    }
-    //what to do if changes are found.
-    if(JSON.stringify(response) != JSON.stringify(last_notion)){
-        console.log("Notion pages do not match, updating pages")
-        notion_task_dict = {}; //reset dict 
-        last_notion = response;
-
-        //find plain text titles of each task, then add to a dictionary to be checked against tasks.
-        for(var x = 0; x < response.results.length; x++){
-            var title = response.results[x].properties.Name.title[0].plain_text
-            var notion_page_id = response.results[x].id
-            notion_task_dict[title] = [0, notion_page_id];      
-        };
-        console.log(notion_task_dict);
-        notion_synced = true;
-    //What to do if no changes are found
-    } else {
-        console.log("No notion changes found")
     }
 }
 
