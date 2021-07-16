@@ -44,9 +44,11 @@ async function findNotionChanges() {
     
             //find plain text titles of each task, then add to a dictionary to be checked against tasks.
             for(var x = 0; x < response.results.length; x++){
-                var title = response.results[x].properties.Name.title[0].plain_text
+                var notion_title = response.results[x].properties.Name.title[0].plain_text
                 var notion_page_id = response.results[x].id
-                notion_task_dict[title] = [0, notion_page_id];      
+                var notion_url = response.results[x].url
+
+                notion_task_dict[notion_title] = [0, notion_page_id, notion_url];      
             };
             console.log(notion_task_dict);
             notion_synced = true;
@@ -98,12 +100,12 @@ async function findTodoistChanges() {
  * Adds a task to Todoist from a notion page.
  * @param  {String} title The name of the notion page to be added as a task in todoist.
  */
-function add_task(title) {
+function add_task(title, url) {
     todoist_synced = false; //todoist list is no longer synced. 
     console.log("adding task: " + title);
     fetch('https://api.todoist.com/rest/v1/tasks', {
         method: 'POST', // or 'PUT'
-        body: JSON.stringify({"content": title}),
+        body: JSON.stringify({"content": title, "description": url}),
         headers: { 
             "Content-Type": "application/json",
             "X-Request-Id": uuid4(), 
@@ -129,7 +131,7 @@ function check_if_synced(){
                 if (notion_task_dict[title][0] == 0){
                     todoist_synced = false;
                     console.log("New notion page found running add_task")
-                    add_task(title);
+                    add_task(title, notion_task_dict[title][2]);
                     notion_task_dict[title][0] = 1;
                 } else if (notion_task_dict[title][0] == 1){
                     notion_synced = false;
